@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=1462, height=254, initial-scale=1.0">
+<title>G1 Caruaru – Notícias</title>
+
+<style>
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: Arial, Helvetica, sans-serif;
+}
+
+html, body {
+    width: 1462px;
+    height: 254px;
+    overflow: hidden;
+}
+
+body {
+    background-color: #ff6e00;
+    color: #ffffff;
+    display: flex;
+    padding: 0 36px;
+}
+
+/* Container principal */
+.feed {
+    display: flex;
+    align-items: flex-start; /* 🔼 SOBE logo e texto */
+    width: 100%;
+    height: 100%;
+    gap: 32px;
+    padding-top: 28px;      /* ajuste fino vertical */
+}
+
+/* Logo */
+.logo {
+    width: 80px;
+    height: auto;
+    flex-shrink: 0;
+}
+
+/* Área do texto */
+.texto {
+    display: flex;
+    align-items: flex-start;
+    height: 100%;
+    flex: 1;
+    overflow: hidden;
+}
+
+/* Texto da notícia */
+.noticia {
+    font-size: 32px;
+    font-weight: 700;
+    line-height: 1.15;
+    max-height: 100%;
+    overflow: hidden;
+    animation: fade 0.6s ease-in-out;
+}
+
+/* Animação */
+@keyframes fade {
+    from { opacity: 0; }
+    to   { opacity: 1; }
+}
+</style>
+</head>
+
+<body>
+
+<div class="feed">
+
+    <img src="logo-g1.png" alt="G1 Notícias" class="logo">
+
+    <div class="texto">
+        <div class="noticia" id="noticia">
+            Carregando notícias…
+        </div>
+    </div>
+
+</div>
+
+<script>
+const FEED =
+  "https://api.rss2json.com/v1/api.json?rss_url=https://g1.globo.com/rss/g1/pe/caruaru-regiao/";
+
+const BLOQUEADAS = [];
+
+let noticias = [];
+let atual = 0;
+
+fetch(FEED)
+  .then(r => r.json())
+  .then(d => {
+
+      noticias = d.items
+        .map(i => i.title)
+        .filter(titulo => {
+            const t = titulo.toLowerCase();
+            return !BLOQUEADAS.some(p => t.includes(p));
+        });
+
+      if (!noticias.length) {
+          document.getElementById("noticia").innerText =
+            "Nenhuma notícia disponível no momento";
+          return;
+      }
+
+      trocar();
+      setInterval(trocar, 30000);
+  })
+  .catch(() => {
+      document.getElementById("noticia").innerText =
+        "Não foi possível carregar as notícias";
+  });
+
+function trocar() {
+    const el = document.getElementById("noticia");
+    el.style.opacity = 0;
+
+    setTimeout(() => {
+        el.innerText = noticias[atual];
+        el.style.opacity = 1;
+        atual = (atual + 1) % noticias.length;
+    }, 300);
+}
+</script>
+
+</body>
+</html>
